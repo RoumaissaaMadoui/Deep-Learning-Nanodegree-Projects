@@ -67,10 +67,35 @@ def train(model, train_loader, epochs, optimizer, loss_fn, device):
     device       - Where the model and data should be loaded (gpu or cpu).
     """
     
-    # TODO: Paste the train() method developed in the notebook here.
+    for epoch in range(1, epochs + 1):
+        model.train()
+        total_loss = 0
+        for batch in train_loader:         
+            batch_X, batch_y = batch
+            
+            batch_X = batch_X.to(device)
+            batch_y = batch_y.to(device)
+            
+            # Zero accumulated gradients
+            model.zero_grad()
 
-    pass
-
+            # Get the output from the model
+            out = model.forward(batch_X)
+            
+            # Calculate the loss
+            loss = loss_fn(out, batch_y)
+            
+            # Perform backpropagation
+            loss.backward()
+            
+            # `clip_grad_norm` helps prevent the exploding gradient problem in LSTMs.
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 5)
+        
+            # Perform optimization
+            optimizer.step()
+            
+            total_loss += loss.data.item()
+        print("Epoch: {}, BCELoss: {}".format(epoch, total_loss / len(train_loader)))
 
 if __name__ == '__main__':
     # All of the model parameters and training parameters are sent as arguments when the script
